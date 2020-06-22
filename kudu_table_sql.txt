@@ -1,0 +1,27 @@
+CREATE TABLE  test.test_mobile
+(
+  logid STRING,
+  userid STRING,
+  logdt STRING,
+  deviceid String,
+  remoteip String,
+  ostype String,
+  osversion String,
+  PRIMARY KEY(logid)
+)
+PARTITION BY HASH PARTITIONS 4
+STORED AS KUDU
+TBLPROPERTIES('kudu.master_addresses' = 'pmda-reml-t1003.svr.toastmaker.net:7051');
+
+ALTER TABLE  test.test_mobile SET TBLPROPERTIES('EXTERNAL' = 'TRUE');
+
+ALTER TABLE  test.test_mobile SET TBLPROPERTIES('kudu.table_name'='impala::test.test_mobile');
+
+// table list 확인
+kudu table list pmda-reml-t1003.svr.toastmaker.net:7051
+
+// table describe
+kudu table describe  pmda-reml-t1003.svr.toastmaker.net:7051 impala::test.test_mobile
+
+// table delete
+kudu table delete pmda-reml-t1003.svr.toastmaker.net:7051 impala::test.test_mobile

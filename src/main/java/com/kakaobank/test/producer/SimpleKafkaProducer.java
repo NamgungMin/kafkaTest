@@ -73,7 +73,7 @@ public class SimpleKafkaProducer {
                 Schema schema = parser.parse(modile.getMOBILESCHEMA());
                 GenericRecord avroRecord = new GenericData.Record(schema);
 
-                avroRecord.put("logId", "2");
+                avroRecord.put("logId", "3");
                 avroRecord.put("userId", "KK123GG");
                 avroRecord.put("logDt", "20180626010110");
                 avroRecord.put("deviceId", "2x3fel12f99djr");
@@ -96,7 +96,7 @@ public class SimpleKafkaProducer {
                 Schema schema = parser.parse(banking.getBANKINGSCHEMA());
                 GenericRecord avroRecord = new GenericData.Record(schema);
 
-                avroRecord.put("logId", "EGHE4564505");
+                avroRecord.put("logId", "EGHE4564507");
                 avroRecord.put("logDt", "20180626010110");
                 avroRecord.put("transactionDt", "20180626");
                 avroRecord.put("resultCode", "OK");

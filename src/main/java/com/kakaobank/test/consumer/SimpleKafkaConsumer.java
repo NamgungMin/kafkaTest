@@ -1,15 +1,13 @@
 package com.kakaobank.test.consumer;
 
+import com.kakaobank.test.producer.SimpleKafkaProducer;
 import com.kakaobank.test.util.Log;
 import com.kakaobank.test.util.StringUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.kudu.client.Insert;
-import org.apache.kudu.client.KuduClient;
-import org.apache.kudu.client.KuduSession;
-import org.apache.kudu.client.KuduTable;
+import org.apache.kudu.client.*;
 import sun.reflect.annotation.ExceptionProxy;
 
 import java.net.URLDecoder;
@@ -37,15 +35,19 @@ public class SimpleKafkaConsumer {
         KuduClient kuduClient =new KuduClient.KuduClientBuilder("pmda-reml-t1003.svr.toastmaker.net:7051").build();
         StringUtil su = new StringUtil();
         HashMap<String, String> consumStr;
+        long start;
+        long end;
+        KuduSession session = null;
         while (true) {
             ConsumerRecords<String, GenericRecord> records = consumer.poll(Duration.ofMillis(500));
             for (ConsumerRecord<String, GenericRecord> record : records) {
                 String s = record.topic();
                 logger.info( s +"/" +record.value().toString(), SimpleKafkaConsumer.class);
                 if ("mobile".equals(s)) {
+                    start = System.currentTimeMillis();
                     consumStr = su.jsonParser(record.value().toString());
                     try {
-                        KuduSession session = kuduClient.newSession();
+                        session = kuduClient.newSession();
                         KuduTable table = kuduClient.openTable("impala::test.mobile");
 
                         Insert insert = table.newInsert();
@@ -53,28 +55,36 @@ public class SimpleKafkaConsumer {
                             insert.getRow().addString(key.toLowerCase(), consumStr.get(key));
                         }
                         session.apply(insert);
-
+                        end = System.currentTimeMillis();
+                        logger.info("consumer time during time : "+ (end-start),  SimpleKafkaConsumer.class);
                     } catch (Exception e) {
                         e.printStackTrace();
+                    } finally {
+                        try {
+                            if (session != null) {
+                                session.flush();
+                                session.close();
+                            }
+                        } catch (KuduException e) {
+                            logger.error(e.toString(), SimpleKafkaConsumer.class);
+                        }
                     }
                 } else if ("banking".equals(s)) {
+                    start = System.currentTimeMillis();
                     consumStr = su.jsonParser(record.value().toString());
                     try {
-                        KuduSession session = kuduClient.newSession();
+                        session = kuduClient.newSession();
                         KuduTable table = kuduClient.openTable("impala::test.banking");
-
                         Insert insert = table.newInsert();
                         String logId = consumStr.get("logId");
                         for (String key : consumStr.keySet()) {
                             logger.info(key.toLowerCase()+" / " + consumStr.get(key), SimpleKafkaConsumer.class);
-
                             if("transactioncontent".equals(key.toLowerCase())) {
                                 StringBuilder sb = new StringBuilder();
                                 String transactioncontent = URLDecoder.decode(consumStr.get(key),"utf-8");
                                 ArrayList<String> splitStr = su.getMaxByteString(transactioncontent, cutLen);
                                 KuduSession session_detail = kuduClient.newSession();
                                 KuduTable table_detail = kuduClient.openTable("impala::test.banking_transactioncontent");
-
                                 String sublogid;
                                 String delimeter = "";
                                 int index = 0;
@@ -95,14 +105,21 @@ public class SimpleKafkaConsumer {
                                 insert.getRow().addString(key.toLowerCase(), consumStr.get(key));
                             }
                         }
-
                         session.apply(insert);
-
+                        end = System.currentTimeMillis();
+                        logger.info("consumer time during time : "+ (end-start),  SimpleKafkaConsumer.class);
                     } catch (Exception e) {
                         e.printStackTrace();
+                    } finally {
+                        try {
+                            if (session != null) {
+                                session.flush();
+                                session.close();
+                            }
+                        } catch (KuduException e) {
+                            logger.error(e.toString(), SimpleKafkaConsumer.class);
+                        }
                     }
-                } else {
-                    throw new IllegalStateException("get message on topic " + record.topic());
                 }
             }
         }

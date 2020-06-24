@@ -9,7 +9,8 @@ public class Banking {
             "    \"fields\": [" +
             "        {\"name\": \"transactionDt\", \"type\": \"string\"}," +
             "        {\"name\": \"logId\", \"type\": \"string\"}," +
-            "        {\"name\": \"logdt\",  \"type\": \"string\"}," +
+            "        {\"name\": \"logDt\",  \"type\": \"string\"}," +
+            "        {\"name\": \"resultCode\",  \"type\": \"string\"}," +
             "        {\"name\": \"userId\",  \"type\": \"string\"}," +
             "        {\"name\": \"TransactionContent\",  \"type\": \"string\"}" +
             "    ]" +
@@ -18,9 +19,22 @@ public class Banking {
 
     private String transactionDt;
     private String logId;
-    private String logdt;
+    private String logDt;
+    private String resultCode;
     private String userId;
     private String TransactionContent;
+
+    public String getBANKINGSCHEMA() {
+        return BANKINGSCHEMA;
+    }
+
+    public String getResultCode() {
+        return resultCode;
+    }
+
+    public void setResultCode(String resultCode) {
+        this.resultCode = resultCode;
+    }
 
     public String getTransactionDt() {
         return transactionDt;
@@ -38,12 +52,12 @@ public class Banking {
         this.logId = logId;
     }
 
-    public String getLogdt() {
-        return logdt;
+    public String getLogDt() {
+        return logDt;
     }
 
-    public void setLogdt(String logdt) {
-        this.logdt = logdt;
+    public void setLogDt(String logDt) {
+        this.logDt = logDt;
     }
 
     public String getUserId() {

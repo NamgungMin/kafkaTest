@@ -12,7 +12,7 @@ public class Banking {
             "        {\"name\": \"logDt\",  \"type\": \"string\"}," +
             "        {\"name\": \"resultCode\",  \"type\": \"string\"}," +
             "        {\"name\": \"userId\",  \"type\": \"string\"}," +
-            "        {\"name\": \"TransactionContent\",  \"type\": \"string\"}" +
+            "        {\"name\": \"transactionContent\",  \"type\": \"string\"}" +
             "    ]" +
             "  }";
 
@@ -22,19 +22,15 @@ public class Banking {
     private String logDt;
     private String resultCode;
     private String userId;
-    private String TransactionContent;
+    private String transactionContent;
 
     public String getBANKINGSCHEMA() {
         return BANKINGSCHEMA;
     }
 
-    public String getResultCode() {
-        return resultCode;
-    }
+    public String getResultCode() { return resultCode; }
 
-    public void setResultCode(String resultCode) {
-        this.resultCode = resultCode;
-    }
+    public void setResultCode(String resultCode) { this.resultCode = resultCode; }
 
     public String getTransactionDt() {
         return transactionDt;
@@ -56,24 +52,15 @@ public class Banking {
         return logDt;
     }
 
-    public void setLogDt(String logDt) {
-        this.logDt = logDt;
-    }
+    public void setLogDt(String logDt) { this.logDt = logDt; }
 
     public String getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    public void setUserId(String userId) { this.userId = userId; }
 
-    public String getTransactionContent() {
-        return TransactionContent;
-    }
+    public String getTransactionContent() { return transactionContent; }
 
-    public void setTransactionContent(String transactionContent) {
-        TransactionContent = transactionContent;
-    }
-
+    public void setTransactionContent(String transactionContent) { this.transactionContent = transactionContent; }
 }

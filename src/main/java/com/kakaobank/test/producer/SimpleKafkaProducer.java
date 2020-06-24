@@ -12,6 +12,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
@@ -50,18 +52,7 @@ public class SimpleKafkaProducer {
         return props;
     }
 
-    public static void sendNoConfirmResult() {
-        long start = System.currentTimeMillis();
-        try(KafkaProducer<String, String> producer = new KafkaProducer<>(init())){
-            producer.send(new ProducerRecord<String, String>("test", "Apache Kafka is a distributed streaming platform-sendNoConfirmResult()"));
-        }catch (Exception e) {
-            logger.error("error : " + e.toString(),SimpleKafkaProducer.class);
-        }
-        long end = System.currentTimeMillis();
-        logger.info("sendNoConfirmResult - during time : "+ (end-start), SimpleKafkaProducer.class);
-    }
-
-    public static void sendSync(String mode) {
+    public static void sendSync(HashMap<String, String> logMap, String mode) {
         long start = System.currentTimeMillis();
         try(KafkaProducer<String, Object> producer = new KafkaProducer<>(init())){
             RecordMetadata meta;
@@ -72,43 +63,28 @@ public class SimpleKafkaProducer {
                 logger.info(modile.getMOBILESCHEMA(), SimpleKafkaProducer.class);
                 Schema schema = parser.parse(modile.getMOBILESCHEMA());
                 GenericRecord avroRecord = new GenericData.Record(schema);
-
-                avroRecord.put("logId", "3");
-                avroRecord.put("userId", "KK123GG");
-                avroRecord.put("logDt", "20180626010110");
-                avroRecord.put("deviceId", "2x3fel12f99djr");
-                avroRecord.put("remoteIp", "211.12.123.130");
-                avroRecord.put("osType", "ANDROID");
-                avroRecord.put("osVersion", "8.0.0");
-
+                for (String key : logMap.keySet()) {
+                    avroRecord.put(key, logMap.get(key));
+                }
                 meta = producer.send(new ProducerRecord<String, Object>("mobile", avroRecord)).get();
-
             } else if ("banking".equals(mode)) {
                 Banking banking = new Banking();
-                // test String code
-                String tempStr = "거래내용 테스트 나나나나 ABC 12311111111";
-                StringBuffer sb = new StringBuffer();
-                for(int i=0; i<2000;i++){
-                    sb.append(tempStr);
-                }
-                logger.info("input string byte size : " + sb.toString().getBytes().length, SimpleKafkaProducer.class);
                 logger.info(banking.getBANKINGSCHEMA(), SimpleKafkaProducer.class);
                 Schema schema = parser.parse(banking.getBANKINGSCHEMA());
                 GenericRecord avroRecord = new GenericData.Record(schema);
 
-                avroRecord.put("logId", "EGHE4564507");
-                avroRecord.put("logDt", "20180626010110");
-                avroRecord.put("transactionDt", "20180626");
-                avroRecord.put("resultCode", "OK");
-                avroRecord.put("userId", "KK123GG");
-                avroRecord.put("TransactionContent", URLEncoder.encode(sb.toString(), "UTF-8"));
+                for (String key : logMap.keySet()) {
+                    if( "transactionContent".equals(key)){
+                        avroRecord.put(key, URLEncoder.encode(logMap.get(key), "UTF-8"));
+                    } else {
+                        avroRecord.put(key, logMap.get(key));
+                    }
+                }
                 meta = producer.send(new ProducerRecord<String, Object>("banking", avroRecord)).get();
-
             } else {
                 Exception e = new Exception("Wrong mode : " + mode);
                 throw e;
             }
-
             logger.info("Partition: " + meta.partition() + ", Offset: " + meta.offset(), SimpleKafkaProducer.class);
         }catch (Exception e) {
             logger.error("error : " + e.toString(),SimpleKafkaProducer.class);
@@ -117,6 +93,16 @@ public class SimpleKafkaProducer {
         logger.info("sendSync - during time : "+ (end-start),  SimpleKafkaProducer.class);
     }
 
+    public static void sendNoConfirmResult() {
+        long start = System.currentTimeMillis();
+        try(KafkaProducer<String, String> producer = new KafkaProducer<>(init())){
+            producer.send(new ProducerRecord<String, String>("test", "Apache Kafka is a distributed streaming platform-sendNoConfirmResult()"));
+        }catch (Exception e) {
+            logger.error("error : " + e.toString(),SimpleKafkaProducer.class);
+        }
+        long end = System.currentTimeMillis();
+        logger.info("sendNoConfirmResult - during time : "+ (end-start), SimpleKafkaProducer.class);
+    }
 
     public static void sendAsync() {
         long start = System.currentTimeMillis();

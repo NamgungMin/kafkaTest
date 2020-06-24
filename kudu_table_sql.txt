@@ -1,4 +1,5 @@
-CREATE TABLE  test.test_mobile
+# mobile table
+CREATE TABLE  test.mobile
 (
   logid STRING,
   userid STRING,
@@ -13,15 +14,64 @@ PARTITION BY HASH PARTITIONS 4
 STORED AS KUDU
 TBLPROPERTIES('kudu.master_addresses' = 'pmda-reml-t1003.svr.toastmaker.net:7051');
 
-ALTER TABLE  test.test_mobile SET TBLPROPERTIES('EXTERNAL' = 'TRUE');
+ALTER TABLE  test.mobile SET TBLPROPERTIES('EXTERNAL' = 'TRUE');
 
-ALTER TABLE  test.test_mobile SET TBLPROPERTIES('kudu.table_name'='impala::test.test_mobile');
+ALTER TABLE  test.mobile SET TBLPROPERTIES('kudu.table_name'='impala::test.mobile');
 
+# banking table
+CREATE TABLE  test.banking
+(
+  logid STRING,
+  transactiondt STRING,
+  logdt STRING,
+  resultcode String,
+  userid String,
+  transactioncontentid String,
+  PRIMARY KEY(logid)
+)
+PARTITION BY HASH PARTITIONS 4
+STORED AS KUDU
+TBLPROPERTIES('kudu.master_addresses' = 'pmda-reml-t1003.svr.toastmaker.net:7051');
+
+ALTER TABLE  test.banking SET TBLPROPERTIES('EXTERNAL' = 'TRUE');
+
+ALTER TABLE  test.banking SET TBLPROPERTIES('kudu.table_name'='impala::test.banking');
+
+# banking table
+CREATE TABLE  test.banking_transactioncontent
+(
+  sublogid STRING,
+  logid STRING,
+  transactioncontent String,
+  PRIMARY KEY(sublogid)
+)
+PARTITION BY HASH PARTITIONS 4
+STORED AS KUDU
+TBLPROPERTIES('kudu.master_addresses' = 'pmda-reml-t1003.svr.toastmaker.net:7051');
+
+ALTER TABLE  test.banking_transactioncontent SET TBLPROPERTIES('EXTERNAL' = 'TRUE');
+
+ALTER TABLE  test.banking_transactioncontent SET TBLPROPERTIES('kudu.table_name'='impala::test.banking_transactioncontent');
+
+# banking을 두 개의 테이블로 나눈 이유
+- kudu의 경우 하나의 칼럼에 들어가는 value의 최대 사이즈는 64kb를 넘을 수 없다.
+  하지만 요구 사항에서 거래내역의 경우 64kb를 초과하는 것으로 되어 있어서, main table에는 거래내역의 서브 아이디의 리스트를 저장하고,
+  banking_transactioncontent 테이블에 서브 아이디로 64kb초과 되는 분량을 10kb 이하(kudu의 성능상 10kb 이상은 성능 저하가 있다고함)로 쪼개서 넣기 위해
+
+  Cells (individual values)
+    Cells cannot be larger than 64KB before encoding or compression.
+  참고 사이트
+     https://kudu.apache.org/docs/known_issues.html
+
+
+
+
+## kudu cli
 // table list 확인
 kudu table list pmda-reml-t1003.svr.toastmaker.net:7051
 
 // table describe
-kudu table describe  pmda-reml-t1003.svr.toastmaker.net:7051 impala::test.test_mobile
+kudu table describe  pmda-reml-t1003.svr.toastmaker.net:7051 impala::test.mobile
 
 // table delete
-kudu table delete pmda-reml-t1003.svr.toastmaker.net:7051 impala::test.test_mobile
+kudu table delete pmda-reml-t1003.svr.toastmaker.net:7051 impala::test.mobile

@@ -1,0 +1,17 @@
+1> 테이블 생성시 
+에러 :  ImpalaRuntimeException: Error creating Kudu table 'impala::test.banking' 
+		CAUSED BY: ImpalaRuntimeException: Kudu PRIMARY KEY columns must be specified as the first columns in the table 
+		(expected leading columns ('logid') but found ('transactiondt'))
+원인 : primary key는 다른 칼럼보다 앞에 있어야 한다.
+해결 : primary key 칼럼을 가장 앞에 위치 시킴
+
+2> 거래 로그의 거래 내용이 Kudu에 insert 안 됨
+에러 : 거래 내용이 정상적으로 consumer까지는 전달이 되나, kudu의 칼럼에 insert가 안됨
+원인 : value의 최대 입력값은 64kb임(Cells cannot be larger than 64KB before encoding or compression.)
+해결 : 거래 로그 테이블을 하나에서 두 개(메인 테이블 / 거래내용 테이블)로 변경하고, 일정 사이즈 이상의 내용은 분리해서 넣고 해당 id list를 메인 테이블에 insert
+
+3> avro 스키마가 변경 되었을 떄
+에러 : [ERROR] 2020-06-24 22:35:06.032 [main] Log - com.kakaobank.test.producer.SimpleKafkaProducer error : org.apache.kafka.common.errors.SerializationException: Error registering Avro schema: {"type":"record","name":"Banking","namespace":"com.kakaobank.test.entity","fields":[{"name":"transactionDt","type":"string"},{"name":"logId","type":"string"},{"name":"logDt","type":"string"},{"name":"resultCode","type":"string"},{"name":"userId","type":"string"},{"name":"transactionContent","type":"string"}]}
+원인 : Schema Registry에 등록된 스키마와 producer에서 보내는 스키마가 서로 다름
+해결 : Schema Registry에 등록된 스키마를 지우고 producer에서 다시 보냄
+       curl -X DELETE http://10.162.165.39:8081/subjects/banking-value/versions/1

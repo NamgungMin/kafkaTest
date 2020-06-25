@@ -41,7 +41,7 @@ public class FileLogTail implements Runnable {
                     while ((log = readWriteFileAccess.readLine()) != null) {
                         if( log.length() > 0) {
                             try {
-                                HashMap<String, String> logMap = su.parseLog(log, type);
+                                HashMap<String, String> logMap = su.parseLog(new String(log.getBytes("iso-8859-1"), "utf-8"), type);
                                 logger.info(logMap.toString(), FileLogTail.class);
                                 simpleKafkaProducer.sendSync(logMap, type);
                             } catch (Exception e) {

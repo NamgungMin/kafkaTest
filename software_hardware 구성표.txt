@@ -1,0 +1,15 @@
+* software 구성
+java  : 1.8
+kafka : 2.2.1+cdh6.3.0
+Confluent Schema Registry
+kudu : kudu 1.10.0-cdh6.3.0
+impala : 3.2.0+cdh6.3.0
+gradle
+
+* Hardware 구성
+kafka producer / consumer - 1대 
+- Local PC : cpu - Intel(R) Core(TM) i5-6600 CPU @ 3.30GHz
+			 memory - 8.00GB
+kafka : 3대 
+kudu : master 1대 / Tablet Server 3 대
+impala : Impala Catalog Server 1 대 / Impala Daemon 1대
